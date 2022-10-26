@@ -4,6 +4,8 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/gnatunstyles/geoweather/internal/models"
 )
 
 type Cache struct {
@@ -14,7 +16,7 @@ type Cache struct {
 }
 
 type Item struct {
-	Value      interface{}
+	Value      models.City
 	Created    time.Time
 	Expiration int64
 }
@@ -38,7 +40,7 @@ func New(defaultExpiration, cleanupInterval time.Duration) *Cache {
 	return &cache
 }
 
-func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
+func (c *Cache) Set(key string, value models.City, duration time.Duration) {
 
 	var expiration int64
 
@@ -63,7 +65,7 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 	}
 
 }
-func (c *Cache) Get(key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (models.City, bool) {
 
 	c.RLock()
 
@@ -73,7 +75,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 
 	// ключ не найден
 	if !found {
-		return nil, false
+		return models.City{}, false
 	}
 
 	// Проверка на установку времени истечения, в противном случае он бессрочный
@@ -81,7 +83,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 
 		// Если в момент запроса кеш устарел возвращаем nil
 		if time.Now().UnixNano() > item.Expiration {
-			return nil, false
+			return models.City{}, false
 		}
 
 	}
@@ -96,7 +98,7 @@ func (c *Cache) Delete(key string) error {
 	defer c.Unlock()
 
 	if _, found := c.items[key]; !found {
-		return errors.New("Key not found")
+		return errors.New("key not found")
 	}
 
 	delete(c.items, key)

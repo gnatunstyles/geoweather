@@ -18,3 +18,9 @@ type PredictionParse struct {
 		Name string `json:"name"`
 	} `json:"city"`
 }
+
+type Prediction struct {
+	City string
+	Temp float64
+	Date string
+}
